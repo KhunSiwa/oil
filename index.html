@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>Smart Lubrication - AI & IoT Quality Control System</title>
+  
+  <!-- Prevent FOUC (Flash of Unstyled Content) -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem("theme") || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.documentElement.style.colorScheme = savedTheme;
+    })();
+  </script>
+
+  <!-- Google Fonts: Inter for general text, Orbitron & Share Tech Mono for digital industrial panels -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- App Wrapper (16:9 responsive grid structure) -->
+  <div class="app-container">
+    
+    <!-- ==========================================
+         SIDEBAR
+         ========================================== -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-container">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z" class="logo-drop"/>
+              <path d="M12 12v3M9 15h6" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <span class="logo-title">Smart Lubrication</span>
+            <span class="logo-subtitle">AI & IoT Platform</span>
+          </div>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-label">Menu</div>
+        <ul class="nav-list">
+          <li class="nav-item active" data-view="dashboard">
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+          </li>
+          <li class="nav-item" data-view="factory">
+            <i data-lucide="factory"></i>
+            <span>Factory Overview</span>
+          </li>
+          <li class="nav-item" data-view="monitoring">
+            <i data-lucide="gauge"></i>
+            <span>Oil Monitoring</span>
+          </li>
+          <li class="nav-item" data-view="analytics">
+            <i data-lucide="brain-circuit"></i>
+            <span>AI Analytics</span>
+          </li>
+          <li class="nav-item" data-view="health">
+            <i data-lucide="activity"></i>
+            <span>Machine Health</span>
+          </li>
+          <li class="nav-item" data-view="predictive">
+            <i data-lucide="wrench"></i>
+            <span>Predictive Maint.</span>
+          </li>
+          <li class="nav-item" data-view="quality">
+            <i data-lucide="droplet"></i>
+            <span>Oil Quality</span>
+          </li>
+          <li class="nav-item" data-view="alerts">
+            <i data-lucide="bell-ring"></i>
+            <span>Alerts</span>
+            <span class="badge badge-danger alert-badge-count">3</span>
+          </li>
+          <li class="nav-item" data-view="reports">
+            <i data-lucide="file-bar-chart"></i>
+            <span>Reports</span>
+          </li>
+          <li class="nav-item" data-view="traceability">
+            <i data-lucide="qr-code"></i>
+            <span>Traceability</span>
+          </li>
+          <li class="nav-item" data-view="devices">
+            <i data-lucide="cpu"></i>
+            <span>Devices</span>
+          </li>
+          <li class="nav-item" data-view="settings">
+            <i data-lucide="sliders"></i>
+            <span>Settings</span>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="tech-tag">
+          <i data-lucide="server"></i>
+          <span>Siemens Edge Enabled</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Area -->
+    <main class="main-content">
+      
+      <!-- ==========================================
+           TOP BAR
+           ========================================== -->
+      <header class="top-bar">
+        <div class="header-left">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" placeholder="Search machine, batch, operator, or sensors..." id="global-search">
+          </div>
+          
+          <div class="factory-selector-wrapper">
+            <i data-lucide="map-pin"></i>
+            <select id="factory-selector" class="factory-select">
+              <option value="tx-plant">Texas Gigafactory - Zone A</option>
+              <option value="mu-plant">Munich Assembly - Line B</option>
+              <option value="sg-plant">Singapore Precision - Zone C</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          <!-- Current Time Clock -->
+          <div class="time-display" id="clock-display">
+            <i data-lucide="clock"></i>
+            <span id="clock-time">11:52:49</span>
+            <span class="clock-divider">|</span>
+            <span id="clock-date">Aug 06, 2026</span>
+          </div>
+
+          <!-- Notification Bell -->
+          <div class="notification-bell-container" id="noti-bell-trigger">
+            <button class="icon-button" aria-label="Notifications">
+              <i data-lucide="bell"></i>
+              <span class="pulse-indicator"></span>
+            </button>
+            
+            <!-- Notifications Dropdown -->
+            <div class="noti-dropdown" id="noti-dropdown-panel">
+              <div class="noti-dropdown-header">
+                <h3>System Notifications</h3>
+                <button class="text-button" id="clear-noti-btn">Clear All</button>
+              </div>
+              <ul class="noti-list" id="noti-list-container">
+                <li class="noti-item unread critical">
+                  <div class="noti-icon"><i data-lucide="alert-triangle"></i></div>
+                  <div class="noti-info">
+                    <p class="noti-desc"><strong>Pump #4:</strong> Viscosity index critical warning (98.4 cSt).</p>
+                    <span class="noti-time">2 mins ago</span>
+                  </div>
+                </li>
+                <li class="noti-item unread warning">
+                  <div class="noti-icon"><i data-lucide="droplet"></i></div>
+                  <div class="noti-info">
+                    <p class="noti-desc"><strong>Turbine #12:</strong> Moisture level increasing (280 ppm).</p>
+                    <span class="noti-time">15 mins ago</span>
+                  </div>
+                </li>
+                <li class="noti-item">
+                  <div class="noti-icon"><i data-lucide="check-circle"></i></div>
+                  <div class="noti-info">
+                    <p class="noti-desc"><strong>Batch LUB-2026-A8:</strong> Verification check passed successfully.</p>
+                    <span class="noti-time">1 hr ago</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Dark Mode Toggle -->
+          <button class="icon-button" id="theme-toggle" aria-label="Toggle Theme">
+            <i data-lucide="moon" class="theme-icon-dark"></i>
+            <i data-lucide="sun" class="theme-icon-light"></i>
+          </button>
+
+          <!-- User Profile -->
+          <div class="user-profile">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100&h=100" alt="Dr. Alexander Vance" class="user-avatar">
+            <div class="user-details">
+              <span class="user-name">Dr. Alexander Vance</span>
+              <span class="user-role">Principal Reliability Eng.</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ==========================================
+           MAIN CONTENT CONTAINER
+           ========================================== -->
+      <div class="content-viewport">
+        
+        <!-- 1. DASHBOARD VIEW (HOME) -->
+        <section id="view-dashboard" class="view-pane active">
+          <!-- Top KPI Cards -->
+          <div class="kpi-grid">
+            <div class="kpi-card" data-trend="up">
+              <div class="kpi-header">
+                <span class="kpi-title">Total Machines</span>
+                <div class="kpi-icon-bg primary"><i data-lucide="server"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-total-machines">24</div>
+              <div class="kpi-footer">
+                <span class="trend-indicator positive"><i data-lucide="arrow-up-right"></i> +2 added</span>
+                <span class="kpi-subtext">this quarter</span>
+              </div>
+            </div>
+            
+            <div class="kpi-card" data-trend="up">
+              <div class="kpi-header">
+                <span class="kpi-title">Active Machines</span>
+                <div class="kpi-icon-bg success"><i data-lucide="play-circle"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-active-machines">22</div>
+              <div class="kpi-footer">
+                <span class="trend-indicator positive"><i data-lucide="trending-up"></i> 91.6%</span>
+                <span class="kpi-subtext">operational rate</span>
+              </div>
+            </div>
+            
+            <div class="kpi-card" data-trend="down">
+              <div class="kpi-header">
+                <span class="kpi-title">Oil Health Index</span>
+                <div class="kpi-icon-bg warning"><i data-lucide="shield-check"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-oil-health">94.2%</div>
+              <div class="kpi-footer">
+                <span class="trend-indicator negative"><i data-lucide="arrow-down-right"></i> -0.8%</span>
+                <span class="kpi-subtext">vs last week</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-header">
+                <span class="kpi-title">Avg Oil Temp</span>
+                <div class="kpi-icon-bg info"><i data-lucide="thermometer"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-avg-temp">64.8°C</div>
+              <div class="kpi-footer">
+                <span class="trend-indicator stable"><i data-lucide="minus"></i> ±0.2°C</span>
+                <span class="kpi-subtext">within safe limits</span>
+              </div>
+            </div>
+
+            <div class="kpi-card" data-trend="up">
+              <div class="kpi-header">
+                <span class="kpi-title">Daily Consumption</span>
+                <div class="kpi-icon-bg primary"><i data-lucide="droplets"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-consumption">42.5 L</div>
+              <div class="kpi-footer">
+                <span class="trend-indicator positive"><i data-lucide="arrow-up-right"></i> +4.2%</span>
+                <span class="kpi-subtext">leak detected in Zone B</span>
+              </div>
+            </div>
+
+            <div class="kpi-card" data-trend="down">
+              <div class="kpi-header">
+                <span class="kpi-title">Downtime Today</span>
+                <div class="kpi-icon-bg danger"><i data-lucide="clock-alert"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-downtime">18m</div>
+              <div class="kpi-footer">
+                <span class="trend-indicator positive"><i data-lucide="arrow-down-left"></i> -45m</span>
+                <span class="kpi-subtext">vs yesterday</span>
+              </div>
+            </div>
+
+            <div class="kpi-card" data-trend="up">
+              <div class="kpi-header">
+                <span class="kpi-title">Active Alerts</span>
+                <div class="kpi-icon-bg danger"><i data-lucide="alert-triangle"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-alerts-today">3</div>
+              <div class="kpi-footer">
+                <span class="trend-indicator negative"><i data-lucide="arrow-up-right"></i> +1 unresolved</span>
+                <span class="kpi-subtext">2 warnings, 1 critical</span>
+              </div>
+            </div>
+
+            <div class="kpi-card" data-trend="up">
+              <div class="kpi-header">
+                <span class="kpi-title">Cost Savings (Mo.)</span>
+                <div class="kpi-icon-bg gold"><i data-lucide="dollar-sign"></i></div>
+              </div>
+              <div class="kpi-value" id="kpi-cost-savings">$14,240</div>
+              <div class="kpi-footer">
+                <span class="trend-indicator positive"><i data-lucide="trending-up"></i> +12%</span>
+                <span class="kpi-subtext">via predictive scheduling</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mid Dashboard Grid -->
+          <div class="dashboard-grid">
+            
+            <!-- Mini Machine Map Panel -->
+            <div class="card col-span-5" id="dashboard-map-panel">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="navigation-2"></i>
+                  <h2>Interactive Factory Layout</h2>
+                </div>
+                <div class="card-header-actions">
+                  <span class="status-legend"><span class="dot green"></span> Normal (22)</span>
+                  <span class="status-legend"><span class="dot yellow"></span> Warn (1)</span>
+                  <span class="status-legend"><span class="dot red"></span> Critical (1)</span>
+                </div>
+              </div>
+              <div class="factory-layout-container" id="mini-factory-map">
+                <svg id="factory-svg" viewBox="0 0 800 360" class="factory-map-svg">
+                  <!-- Zones background -->
+                  <rect x="10" y="10" width="370" height="340" rx="12" class="zone-rect" data-zone="Zone A - Press Shop"/>
+                  <text x="30" y="35" class="zone-label">Zone A - Press Shop</text>
+                  
+                  <rect x="400" y="10" width="390" height="340" rx="12" class="zone-rect" data-zone="Zone B - Assembly Loop"/>
+                  <text x="420" y="35" class="zone-label">Zone B - Assembly Loop</text>
+                  
+                  <!-- Conveyors & Pipes (connecting machines) -->
+                  <path d="M 100 130 L 300 130 L 300 250 L 100 250 Z" class="conveyor-path"/>
+                  <path d="M 500 130 L 700 130 L 700 250 L 500 250 Z" class="conveyor-path"/>
+                  <path d="M 380 130 L 420 130" class="conveyor-path animated-flow-line"/>
+
+                  <!-- Machine Nodes -->
+                  <!-- Zone A Press Shop Machines -->
+                  <g class="machine-node" id="node-pump-1" data-machine-id="pump-1" transform="translate(100, 100)">
+                    <circle r="22" class="node-outer normal"/>
+                    <circle r="16" class="node-inner"/>
+                    <text y="38" text-anchor="middle" class="node-name">Hydraulic Press #1</text>
+                  </g>
+
+                  <g class="machine-node" id="node-pump-2" data-machine-id="pump-2" transform="translate(280, 100)">
+                    <circle r="22" class="node-outer normal"/>
+                    <circle r="16" class="node-inner"/>
+                    <text y="38" text-anchor="middle" class="node-name">Hydraulic Press #2</text>
+                  </g>
+
+                  <g class="machine-node" id="node-pump-3" data-machine-id="pump-3" transform="translate(100, 240)">
+                    <circle r="22" class="node-outer normal"/>
+                    <circle r="16" class="node-inner"/>
+                    <text y="38" text-anchor="middle" class="node-name">Cooling Pump #1</text>
+                  </g>
+
+                  <g class="machine-node" id="node-pump-4" data-machine-id="pump-4" transform="translate(280, 240)">
+                    <circle r="22" class="node-outer critical pulse"/>
+                    <circle r="16" class="node-inner"/>
+                    <text y="38" text-anchor="middle" class="node-name">Main Feed Pump #4</text>
+                  </g>
+
+                  <!-- Zone B Assembly Machines -->
+                  <g class="machine-node" id="node-turb-1" data-machine-id="turb-1" transform="translate(500, 100)">
+                    <circle r="22" class="node-outer normal"/>
+                    <circle r="16" class="node-inner"/>
+                    <text y="38" text-anchor="middle" class="node-name">Steam Turbine #12</text>
+                  </g>
+
+                  <g class="machine-node" id="node-turb-2" data-machine-id="turb-2" transform="translate(680, 100)">
+                    <circle r="22" class="node-outer warning"/>
+                    <circle r="16" class="node-inner"/>
+                    <text y="38" text-anchor="middle" class="node-name">Reciprocating Comp. #3</text>
+                  </g>
+
+                  <g class="machine-node" id="node-gear-1" data-machine-id="gear-1" transform="translate(500, 240)">
+                    <circle r="22" class="node-outer normal"/>
+                    <circle r="16" class="node-inner"/>
+                    <text y="38" text-anchor="middle" class="node-name">Heavy Gearbox #9</text>
+                  </g>
+
+                  <g class="machine-node" id="node-gear-2" data-machine-id="gear-2" transform="translate(680, 240)">
+                    <circle r="22" class="node-outer normal"/>
+                    <circle r="16" class="node-inner"/>
+                    <text y="38" text-anchor="middle" class="node-name">Draft Fan #2</text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <!-- AI Analytics Spotlight Panel -->
+            <div class="card col-span-3">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="sparkles" class="text-gold"></i>
+                  <h2>AI Predictive Diagnostics</h2>
+                </div>
+                <span class="card-badge bg-gold-trans">TensorFlow Edge</span>
+              </div>
+              
+              <div class="ai-spotlight-content" id="ai-quick-panel">
+                <div class="selected-machine-banner">
+                  <span class="label">Focused Unit:</span>
+                  <strong id="focus-machine-name">Main Feed Pump #4</strong>
+                </div>
+
+                <div class="ai-metrics-row">
+                  <div class="ai-metric-item">
+                    <span class="ai-metric-label">Remaining Useful Life (RUL)</span>
+                    <div class="ai-metric-val highlight-danger" id="focus-rul-days">6 Days</div>
+                    <span class="ai-metric-sub">Est. failure: Aug 12, 2026</span>
+                  </div>
+                  
+                  <div class="ai-metric-item">
+                    <span class="ai-metric-label">Health Score</span>
+                    <div class="ai-metric-val" id="focus-health-score" style="color: var(--status-red);">42%</div>
+                    <div class="score-bar-wrapper">
+                      <div class="score-bar-fill" id="focus-health-fill" style="width: 42%; background-color: var(--status-red);"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="ai-recommendation-card alert-state-danger">
+                  <div class="rec-title">
+                    <i data-lucide="alert-octagon"></i>
+                    <span>Maintenance Action Required</span>
+                  </div>
+                  <p class="rec-desc" id="focus-ai-rec-text">
+                    "Possible contamination detected. Metal particle density is increasing exponentially. Lubrication quality is decreasing. Replace filter within 6 days to avoid bearings damage."
+                  </p>
+                  <div class="rec-actions">
+                    <button class="btn btn-primary btn-sm" id="create-workorder-btn">
+                      <i data-lucide="file-plus"></i> Generate Work Order
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="twin-teleport-btn">
+                      <i data-lucide="box"></i> View Digital Twin
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Charts Grid -->
+          <div class="dashboard-grid">
+            
+            <!-- Realtime Telemetry Chart -->
+            <div class="card col-span-4">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="trending-up"></i>
+                  <h2>Real-Time Telemetry (Last 24 Hours)</h2>
+                </div>
+                <div class="card-header-actions">
+                  <button class="chart-tab active" data-chart-param="temp">Temperature</button>
+                  <button class="chart-tab" data-chart-param="press">Pressure</button>
+                  <button class="chart-tab" data-chart-param="flow">Flow Rate</button>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="dashboard-telemetry-chart"></canvas>
+              </div>
+            </div>
+
+            <!-- Oil Consumption Area Chart -->
+            <div class="card col-span-2">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="droplet"></i>
+                  <h2>Oil Consumption (L/Month)</h2>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="dashboard-consumption-chart"></canvas>
+              </div>
+            </div>
+
+            <!-- Downtime Bar Chart -->
+            <div class="card col-span-2">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="clock"></i>
+                  <h2>Downtime Analysis</h2>
+                </div>
+                <div class="card-header-actions">
+                  <select id="downtime-timeframe" class="compact-select">
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="dashboard-downtime-chart"></canvas>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 2. FACTORY OVERVIEW VIEW -->
+        <section id="view-factory" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>Factory Overview & Spatial Monitoring</h1>
+              <p>Locate machines and check real-time oil health statuses across zones.</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-secondary"><i data-lucide="refresh-cw"></i> Reload Layout</button>
+              <button class="btn btn-primary"><i data-lucide="plus"></i> Add New Machine</button>
+            </div>
+          </div>
+          
+          <div class="factory-layout-panel card">
+            <div class="layout-toolbar">
+              <div class="toolbar-group">
+                <button class="toolbar-btn active" id="btn-zone-all">All Zones</button>
+                <button class="toolbar-btn" id="btn-zone-a">Zone A (Press Shop)</button>
+                <button class="toolbar-btn" id="btn-zone-b">Zone B (Assembly Loop)</button>
+              </div>
+              <div class="toolbar-divider"></div>
+              <div class="toolbar-search">
+                <i data-lucide="search"></i>
+                <input type="text" placeholder="Filter layout nodes..." id="layout-search-input">
+              </div>
+            </div>
+            
+            <div class="factory-full-layout-wrapper">
+              <div class="canvas-zoom-container">
+                <div id="full-map-mount"></div>
+              </div>
+
+              <!-- Node inspector side overlay -->
+              <div class="node-inspector-sidebar" id="node-inspector">
+                <div class="inspector-header">
+                  <h3>Machine Details</h3>
+                  <button class="icon-button" id="close-inspector-btn"><i data-lucide="x"></i></button>
+                </div>
+                <div class="inspector-body" id="inspector-content">
+                  <div class="machine-profile">
+                    <div class="machine-icon-wrapper red" id="inspect-machine-icon-state">
+                      <i data-lucide="server"></i>
+                    </div>
+                    <div class="machine-text-profile">
+                      <h4 id="inspect-name">Main Feed Pump #4</h4>
+                      <span class="machine-id-badge" id="inspect-uid">UUID: LUB-PUMP-004</span>
+                      <span class="status-tag critical" id="inspect-status-text">CRITICAL</span>
+                    </div>
+                  </div>
+                  
+                  <div class="info-table">
+                    <div class="info-row">
+                      <span class="label">Location</span>
+                      <span class="val" id="inspect-location">Zone A - Grid A12</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="label">Criticality</span>
+                      <span class="val highlight-danger" id="inspect-criticality">Class 1 (High Duty)</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="label">Oil Lubricant Type</span>
+                      <span class="val" id="inspect-oil-type">Shell Omala S4 WE 320</span>
+                    </div>
+                    <div class="info-row">
+                      <span class="label">Last Oil Change</span>
+                      <span class="val" id="inspect-last-oil-change">April 12, 2026</span>
+                    </div>
+                  </div>
+
+                  <div class="inspection-telemetry-mini">
+                    <h5>Live Telemetry</h5>
+                    <div class="mini-telemetry-grid">
+                      <div class="mini-tel-card">
+                        <span class="mini-tel-lbl">Temperature</span>
+                        <span class="mini-tel-val" id="inspect-temp">84.2°C</span>
+                      </div>
+                      <div class="mini-tel-card">
+                        <span class="mini-tel-lbl">Viscosity</span>
+                        <span class="mini-tel-val" id="inspect-viscosity">240 cSt</span>
+                      </div>
+                      <div class="mini-tel-card">
+                        <span class="mini-tel-lbl">ISO Clean</span>
+                        <span class="mini-tel-val" id="inspect-iso">21/19/16</span>
+                      </div>
+                      <div class="mini-tel-card">
+                        <span class="mini-tel-lbl">Health Score</span>
+                        <span class="mini-tel-val highlight-danger" id="inspect-health">42%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="inspector-actions">
+                    <button class="btn btn-primary btn-block" id="inspect-monitoring-redirect">
+                      <i data-lucide="gauge"></i> Open Oil Monitoring
+                    </button>
+                    <button class="btn btn-secondary btn-block" id="inspect-twin-redirect">
+                      <i data-lucide="box"></i> Open Digital Twin
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. OIL MONITORING VIEW (GAUGES) -->
+        <section id="view-monitoring" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>Real-Time Oil Instrumentation</h1>
+              <p>Live telemetry stream from ESP32 Edge nodes for selected machine.</p>
+            </div>
+            <div class="view-actions">
+              <span class="active-machine-display">
+                Selected Unit: <strong id="monitor-active-machine">Main Feed Pump #4</strong>
+              </span>
+              <button class="btn btn-secondary" id="change-monitor-machine-btn"><i data-lucide="refresh-cw"></i> Switch Machine</button>
+            </div>
+          </div>
+
+          <!-- Gauges Grid -->
+          <div class="gauges-grid">
+            
+            <!-- Gauge 1: Oil Temperature -->
+            <div class="gauge-card" id="gauge-temp-card">
+              <div class="gauge-header">
+                <span class="gauge-title">Oil Temperature</span>
+                <i data-lucide="thermometer"></i>
+              </div>
+              <div class="gauge-visual">
+                <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="45" class="gauge-bg-circle"/>
+                  <circle cx="60" cy="60" r="45" class="gauge-value-circle" id="g-temp-circle" stroke-dasharray="283" stroke-dashoffset="100"/>
+                  <text x="60" y="55" class="gauge-number" id="g-temp-val">84.2</text>
+                  <text x="60" y="75" class="gauge-unit">°C</text>
+                </svg>
+              </div>
+              <div class="gauge-limits">
+                <span>Min: 30°C</span>
+                <span class="gauge-status-badge critical" id="g-temp-status">Critical</span>
+                <span>Max: 90°C</span>
+              </div>
+            </div>
+
+            <!-- Gauge 2: Pressure -->
+            <div class="gauge-card" id="gauge-pressure-card">
+              <div class="gauge-header">
+                <span class="gauge-title">Lubricant Pressure</span>
+                <i data-lucide="activity"></i>
+              </div>
+              <div class="gauge-visual">
+                <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="45" class="gauge-bg-circle"/>
+                  <circle cx="60" cy="60" r="45" class="gauge-value-circle" id="g-pressure-circle" stroke-dasharray="283" stroke-dashoffset="180"/>
+                  <text x="60" y="55" class="gauge-number" id="g-pressure-val">4.8</text>
+                  <text x="60" y="75" class="gauge-unit">bar</text>
+                </svg>
+              </div>
+              <div class="gauge-limits">
+                <span>Min: 2.0 bar</span>
+                <span class="gauge-status-badge normal" id="g-pressure-status">Normal</span>
+                <span>Max: 6.0 bar</span>
+              </div>
+            </div>
+
+            <!-- Gauge 3: Flow Rate -->
+            <div class="gauge-card" id="gauge-flow-card">
+              <div class="gauge-header">
+                <span class="gauge-title">Flow Rate</span>
+                <i data-lucide="wind"></i>
+              </div>
+              <div class="gauge-visual">
+                <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="45" class="gauge-bg-circle"/>
+                  <circle cx="60" cy="60" r="45" class="gauge-value-circle" id="g-flow-circle" stroke-dasharray="283" stroke-dashoffset="120"/>
+                  <text x="60" y="55" class="gauge-number" id="g-flow-val">12.5</text>
+                  <text x="60" y="75" class="gauge-unit">L/min</text>
+                </svg>
+              </div>
+              <div class="gauge-limits">
+                <span>Min: 5 L/min</span>
+                <span class="gauge-status-badge normal" id="g-flow-status">Normal</span>
+                <span>Max: 20 L/min</span>
+              </div>
+            </div>
+
+            <!-- Gauge 4: Oil Level -->
+            <div class="gauge-card" id="gauge-level-card">
+              <div class="gauge-header">
+                <span class="gauge-title">Lubricant Level</span>
+                <i data-lucide="database"></i>
+              </div>
+              <div class="gauge-visual">
+                <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="45" class="gauge-bg-circle"/>
+                  <circle cx="60" cy="60" r="45" class="gauge-value-circle" id="g-level-circle" stroke-dasharray="283" stroke-dashoffset="50"/>
+                  <text x="60" y="55" class="gauge-number" id="g-level-val">82</text>
+                  <text x="60" y="75" class="gauge-unit">%</text>
+                </svg>
+              </div>
+              <div class="gauge-limits">
+                <span>Min: 20%</span>
+                <span class="gauge-status-badge normal" id="g-level-status">Normal</span>
+                <span>Max: 100%</span>
+              </div>
+            </div>
+
+            <!-- Gauge 5: Oil Quality Index -->
+            <div class="gauge-card" id="gauge-oqi-card">
+              <div class="gauge-header">
+                <span class="gauge-title">Oil Quality Index</span>
+                <i data-lucide="shield-alert"></i>
+              </div>
+              <div class="gauge-visual">
+                <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="45" class="gauge-bg-circle"/>
+                  <circle cx="60" cy="60" r="45" class="gauge-value-circle" id="g-oqi-circle" stroke-dasharray="283" stroke-dashoffset="150"/>
+                  <text x="60" y="55" class="gauge-number" id="g-oqi-val">58</text>
+                  <text x="60" y="75" class="gauge-unit">OQI</text>
+                </svg>
+              </div>
+              <div class="gauge-limits">
+                <span>Min: 0</span>
+                <span class="gauge-status-badge warning" id="g-oqi-status">Warning</span>
+                <span>Max: 100</span>
+              </div>
+            </div>
+
+            <!-- Gauge 6: Moisture -->
+            <div class="gauge-card" id="gauge-moisture-card">
+              <div class="gauge-header">
+                <span class="gauge-title">Moisture Content</span>
+                <i data-lucide="droplets"></i>
+              </div>
+              <div class="gauge-visual">
+                <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="45" class="gauge-bg-circle"/>
+                  <circle cx="60" cy="60" r="45" class="gauge-value-circle" id="g-moisture-circle" stroke-dasharray="283" stroke-dashoffset="230"/>
+                  <text x="60" y="55" class="gauge-number" id="g-moisture-val">340</text>
+                  <text x="60" y="75" class="gauge-unit">ppm</text>
+                </svg>
+              </div>
+              <div class="gauge-limits">
+                <span>Normal: &lt; 200 ppm</span>
+                <span class="gauge-status-badge orange" id="g-moisture-status">Degraded</span>
+                <span>Limit: 500 ppm</span>
+              </div>
+            </div>
+
+            <!-- Gauge 7: Viscosity -->
+            <div class="gauge-card" id="gauge-viscosity-card">
+              <div class="gauge-header">
+                <span class="gauge-title">Dynamic Viscosity</span>
+                <i data-lucide="settings-2"></i>
+              </div>
+              <div class="gauge-visual">
+                <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="45" class="gauge-bg-circle"/>
+                  <circle cx="60" cy="60" r="45" class="gauge-value-circle" id="g-viscosity-circle" stroke-dasharray="283" stroke-dashoffset="190"/>
+                  <text x="60" y="55" class="gauge-number" id="g-viscosity-val">288</text>
+                  <text x="60" y="75" class="gauge-unit">cSt</text>
+                </svg>
+              </div>
+              <div class="gauge-limits">
+                <span>Norm: 320 ±10%</span>
+                <span class="gauge-status-badge warning" id="g-viscosity-status">Warning</span>
+                <span>Limit: 250 cSt</span>
+              </div>
+            </div>
+
+            <!-- Gauge 8: Metal Particles -->
+            <div class="gauge-card" id="gauge-metal-card">
+              <div class="gauge-header">
+                <span class="gauge-title">Metal Particle Count</span>
+                <i data-lucide="binary"></i>
+              </div>
+              <div class="gauge-visual">
+                <svg class="radial-gauge-svg" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="45" class="gauge-bg-circle"/>
+                  <circle cx="60" cy="60" r="45" class="gauge-value-circle" id="g-metal-circle" stroke-dasharray="283" stroke-dashoffset="240"/>
+                  <text x="60" y="55" class="gauge-number" id="g-metal-val">42</text>
+                  <text x="60" y="75" class="gauge-unit">ppm</text>
+                </svg>
+              </div>
+              <div class="gauge-limits">
+                <span>Normal: &lt; 15 ppm</span>
+                <span class="gauge-status-badge critical" id="g-metal-status">Critical</span>
+                <span>Limit: 30 ppm</span>
+              </div>
+            </div>
+
+            <!-- Gauge 9: Leak Status -->
+            <div class="gauge-card" id="gauge-leak-card">
+              <div class="gauge-header">
+                <span class="gauge-title">Casing Leak Sensor</span>
+                <i data-lucide="info"></i>
+              </div>
+              <div class="gauge-visual">
+                <div class="leak-indicator-ring status-critical" id="g-leak-indicator">
+                  <span id="g-leak-text">LEAK DETECTED</span>
+                </div>
+              </div>
+              <div class="gauge-limits text-center">
+                <span>Diagnostic: Outer casing moisture high</span>
+              </div>
+            </div>
+
+          </div>
+          
+          <div class="dashboard-grid margin-top-lg">
+            <div class="card col-span-8">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="waves"></i>
+                  <h2>Real-Time Spectral Trend Analysis</h2>
+                </div>
+              </div>
+              <div class="chart-container" style="height: 300px;">
+                <canvas id="spectral-trend-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. AI ANALYTICS VIEW -->
+        <section id="view-analytics" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>AI Predict & Analytics Workspace</h1>
+              <p>Predictive wear modeling, degradation curves, and proactive maintenance windows.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card col-span-3">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="brain"></i>
+                  <h2>Cognitive Degradation Profile</h2>
+                </div>
+              </div>
+              <div class="ai-analytics-workspace-details">
+                <div class="ai-param-card">
+                  <div class="ai-param-header">
+                    <span>Remaining Useful Life (RUL)</span>
+                    <strong class="text-danger" id="ai-view-rul">6 Days</strong>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill bg-danger" id="ai-view-rul-fill" style="width: 12%;"></div>
+                  </div>
+                  <p class="ai-param-sub text-danger">Critically below standard 60-day replacement cycle.</p>
+                </div>
+
+                <div class="ai-param-card">
+                  <div class="ai-param-header">
+                    <span>Machine Health Score</span>
+                    <strong id="ai-view-health">42%</strong>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="ai-view-health-fill" style="width: 42%; background-color: var(--status-red);"></div>
+                  </div>
+                </div>
+
+                <div class="ai-param-card">
+                  <div class="ai-param-header">
+                    <span>Failure Probability</span>
+                    <strong class="text-danger" id="ai-view-failure-prob">88.4%</strong>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill bg-danger" style="width: 88.4%;"></div>
+                  </div>
+                </div>
+
+                <div class="ai-param-card">
+                  <div class="ai-param-header">
+                    <span>Predicted Oil Degradation</span>
+                    <strong class="text-warning">94% (Oxidized)</strong>
+                  </div>
+                  <p class="ai-param-sub">Significant TAN (Total Acid Number) increase predicted in 48 hours.</p>
+                </div>
+
+                <div class="ai-param-card">
+                  <div class="ai-param-header">
+                    <span>Recommended Maintenance Date</span>
+                    <strong class="text-gold" id="ai-view-maint-date">Aug 12, 2026</strong>
+                  </div>
+                  <p class="ai-param-sub">Scheduled replacement date based on dynamic operational cycles.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card col-span-5">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="activity"></i>
+                  <h2>TensorFlow Remaining Useful Life (RUL) Projection</h2>
+                </div>
+              </div>
+              <div class="chart-container" style="height: 280px;">
+                <canvas id="ai-rul-projection-chart"></canvas>
+              </div>
+              
+              <div class="ai-actions-panel margin-top-md">
+                <h3>Recommended Action Plan</h3>
+                <div class="ai-recs-list" id="ai-recs-full-list">
+                  <div class="ai-rec-item-full critical">
+                    <div class="icon-holder"><i data-lucide="alert-octagon"></i></div>
+                    <div class="rec-details">
+                      <h4>Main Feed Pump #4 - Particle Density Spike</h4>
+                      <p>Replace filter immediately. Solid particle contamination exceeds ISO 4406 limit. Wear particles (Iron & Bronze) detected by oil spectrography.</p>
+                      <span class="maint-window-tag">Required action in &lt; 48 hours</span>
+                    </div>
+                  </div>
+                  <div class="ai-rec-item-full warning">
+                    <div class="icon-holder"><i data-lucide="alert-triangle"></i></div>
+                    <div class="rec-details">
+                      <h4>Reciprocating Compressor #3 - Water Contamination</h4>
+                      <p>Centrifuge oil bath or replace desiccant breather. Moisture has reached 280 ppm. High probability of hydrolysis.</p>
+                      <span class="maint-window-tag">Action within 5 days</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. MACHINE HEALTH VIEW -->
+        <section id="view-health" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>Machine Health & Mechanical Diagnostics</h1>
+              <p>Combined vibration, lubrication, and thermal metrics for asset health monitoring.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card col-span-8">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="table"></i>
+                  <h2>Asset Health Matrix</h2>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="enterprise-table">
+                  <thead>
+                    <tr>
+                      <th>Machine Name</th>
+                      <th>Zone</th>
+                      <th>Lubricant Status</th>
+                      <th>Mechanical Wear</th>
+                      <th>Vibration RMS</th>
+                      <th>Operating Temp</th>
+                      <th>Health Index</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="health-matrix-body">
+                    <tr>
+                      <td>Hydraulic Press #1</td>
+                      <td>Zone A</td>
+                      <td><span class="badge badge-success">Excellent</span></td>
+                      <td><span class="badge badge-success">Low</span></td>
+                      <td>1.2 mm/s</td>
+                      <td>48.2°C</td>
+                      <td><strong>98%</strong></td>
+                      <td><button class="btn btn-sm btn-secondary">Analyze</button></td>
+                    </tr>
+                    <tr class="alert-row-critical">
+                      <td>Main Feed Pump #4</td>
+                      <td>Zone A</td>
+                      <td><span class="badge badge-danger">Critical</span></td>
+                      <td><span class="badge badge-danger">Severe</span></td>
+                      <td>5.8 mm/s</td>
+                      <td>84.2°C</td>
+                      <td class="text-danger"><strong>42%</strong></td>
+                      <td><button class="btn btn-sm btn-primary">Diagnose</button></td>
+                    </tr>
+                    <tr class="alert-row-warning">
+                      <td>Reciprocating Compressor #3</td>
+                      <td>Zone B</td>
+                      <td><span class="badge badge-warning">Degraded</span></td>
+                      <td><span class="badge badge-warning">Moderate</span></td>
+                      <td>3.1 mm/s</td>
+                      <td>72.5°C</td>
+                      <td class="text-warning"><strong>74%</strong></td>
+                      <td><button class="btn btn-sm btn-secondary">Analyze</button></td>
+                    </tr>
+                    <tr>
+                      <td>Heavy Gearbox #9</td>
+                      <td>Zone B</td>
+                      <td><span class="badge badge-success">Good</span></td>
+                      <td><span class="badge badge-success">Low</span></td>
+                      <td>1.8 mm/s</td>
+                      <td>56.1°C</td>
+                      <td><strong>91%</strong></td>
+                      <td><button class="btn btn-sm btn-secondary">Analyze</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. PREDICTIVE MAINTENANCE VIEW -->
+        <section id="view-predictive" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>Predictive Maintenance Scheduler</h1>
+              <p>AI-optimized maintenance windows to minimize factory downtime.</p>
+            </div>
+          </div>
+          
+          <div class="dashboard-grid">
+            <div class="card col-span-3">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="calendar"></i>
+                  <h2>Smart Maintenance Calendar</h2>
+                </div>
+              </div>
+              <div class="maint-scheduler-summary">
+                <div class="scheduled-job-card critical">
+                  <span class="date">AUG 12</span>
+                  <div class="details">
+                    <h4>Filter & Oil Replacement</h4>
+                    <p>Main Feed Pump #4</p>
+                    <span class="job-urgency">AI Flagged - High Priority</span>
+                  </div>
+                </div>
+
+                <div class="scheduled-job-card warning">
+                  <span class="date">AUG 17</span>
+                  <div class="details">
+                    <h4>Desiccant Breather Replacement</h4>
+                    <p>Reciprocating Compressor #3</p>
+                    <span class="job-urgency">Preventative Maintenance</span>
+                  </div>
+                </div>
+
+                <div class="scheduled-job-card normal">
+                  <span class="date">AUG 28</span>
+                  <div class="details">
+                    <h4>Routine Oil Sample Analysis</h4>
+                    <p>Steam Turbine #12</p>
+                    <span class="job-urgency">Scheduled Routine</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card col-span-5">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="bar-chart-3"></i>
+                  <h2>Maintenance Impact on Lifetime Cost</h2>
+                </div>
+              </div>
+              <div class="chart-container" style="height: 300px;">
+                <canvas id="predictive-savings-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. OIL QUALITY VIEW -->
+        <section id="view-quality" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>Oil Quality Assessment & Analytics</h1>
+              <p>Chemical composition, cleanliness indexes, and fluid degradations.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card col-span-3">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="flask-conical"></i>
+                  <h2>Lubricant Chemical Profile</h2>
+                </div>
+              </div>
+              <div class="oil-quality-spec-panel">
+                <div class="spec-score-container">
+                  <span class="spec-label">Overall Oil Quality Score</span>
+                  <div class="spec-score-value warning" id="view-q-score">58%</div>
+                  <p class="spec-sub">Status: Partially Oxidized, Contaminated</p>
+                </div>
+                
+                <div class="spec-indicator-row">
+                  <div class="spec-bar-item">
+                    <span class="spec-bar-lbl">Water Contamination</span>
+                    <span class="spec-bar-val text-danger" id="view-q-water">340 ppm</span>
+                    <div class="progress-bar-container"><div class="progress-bar-fill bg-danger" style="width: 68%;"></div></div>
+                  </div>
+                  <div class="spec-bar-item">
+                    <span class="spec-bar-lbl">Metal Particles</span>
+                    <span class="spec-bar-val text-danger" id="view-q-metal">42 ppm</span>
+                    <div class="progress-bar-container"><div class="progress-bar-fill bg-danger" style="width: 84%;"></div></div>
+                  </div>
+                  <div class="spec-bar-item">
+                    <span class="spec-bar-lbl">Viscosity Deviation</span>
+                    <span class="spec-bar-val text-warning" id="view-q-visc">-10% (288 cSt)</span>
+                    <div class="progress-bar-container"><div class="progress-bar-fill bg-warning" style="width: 40%;"></div></div>
+                  </div>
+                  <div class="spec-bar-item">
+                    <span class="spec-bar-lbl">Total Acid Number (TAN)</span>
+                    <span class="spec-bar-val text-warning" id="view-q-tan">1.45 mg KOH/g</span>
+                    <div class="progress-bar-container"><div class="progress-bar-fill bg-warning" style="width: 58%;"></div></div>
+                  </div>
+                  <div class="spec-bar-item">
+                    <span class="spec-bar-lbl">ISO Cleanliness Code</span>
+                    <span class="spec-bar-val text-danger" id="view-q-iso">ISO 21 / 19 / 16</span>
+                    <p class="spec-bar-sub text-danger">Target: ISO 18 / 16 / 13</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card col-span-5">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="line-chart"></i>
+                  <h2>Spectroscopic Contaminant Trend</h2>
+                </div>
+              </div>
+              <div class="chart-container" style="height: 320px;">
+                <canvas id="spectroscopic-contaminants-chart"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8. ALERTS VIEW -->
+        <section id="view-alerts" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>Factory Alert & Notification Center</h1>
+              <p>Active machine diagnostics alarms and dispatch notification channels.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card col-span-5">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="alert-circle"></i>
+                  <h2>Active Alarm Log & Timeline</h2>
+                </div>
+              </div>
+              <div class="alerts-timeline-container" id="alerts-full-timeline">
+                <!-- Loaded dynamically by app.js -->
+              </div>
+            </div>
+
+            <div class="card col-span-3">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="bell-ring"></i>
+                  <h2>Dispatch Notifications</h2>
+                </div>
+              </div>
+              
+              <div class="dispatch-settings-form">
+                <p class="section-desc">Trigger automated system alerts via multiple notification gateways.</p>
+                
+                <div class="dispatch-option">
+                  <div class="option-info">
+                    <i data-lucide="smartphone" class="icon-push"></i>
+                    <div>
+                      <h4>Mobile Push Notifications</h4>
+                      <span>Instantly dispatch alerts to supervisor mobile apps.</span>
+                    </div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="dispatch-push" checked>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="dispatch-option">
+                  <div class="option-info">
+                    <i data-lucide="mail" class="icon-email"></i>
+                    <div>
+                      <h4>Email Dispatch (SMTP)</h4>
+                      <span>Send detailed diagnostics report to reliability team.</span>
+                    </div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="dispatch-email" checked>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="dispatch-option">
+                  <div class="option-info">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="line-icon-svg">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <div>
+                      <h4>Line Notify Hook</h4>
+                      <span>Forward alarms directly to operations group chat.</span>
+                    </div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="dispatch-line" checked>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="dispatch-status">
+                  <span class="status-indicator online"></span>
+                  <span>Notification gateways online and connected.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. REPORTS VIEW -->
+        <section id="view-reports" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>Analytical Reports Generator</h1>
+              <p>Generate, export, and schedule reliability summaries and oil audits.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card col-span-4">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="file-text"></i>
+                  <h2>Export Live Audit Report</h2>
+                </div>
+              </div>
+              <div class="report-generator-form">
+                <div class="form-group">
+                  <label for="report-machine-select">Target Asset</label>
+                  <select id="report-machine-select">
+                    <option value="all">All Active Machines</option>
+                    <option value="pump-4">Main Feed Pump #4</option>
+                    <option value="turb-2">Reciprocating Compressor #3</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="report-timeframe">Audit Timeframe</label>
+                  <select id="report-timeframe">
+                    <option value="daily">Daily Quality Summary</option>
+                    <option value="weekly">Weekly Operational Audit</option>
+                    <option value="monthly">Monthly Reliability Report</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Export Format</label>
+                  <div class="format-buttons">
+                    <button class="format-btn active" data-format="pdf"><i data-lucide="file-text"></i> PDF Format</button>
+                    <button class="format-btn" data-format="excel"><i data-lucide="sheet"></i> Excel Sheet</button>
+                    <button class="format-btn" data-format="csv"><i data-lucide="file-spreadsheet"></i> CSV Table</button>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary btn-block margin-top-md" id="generate-report-btn">
+                  <i data-lucide="download"></i> Generate and Export Report
+                </button>
+                
+                <div class="progress-bar-container hide margin-top-md" id="report-progress-container">
+                  <div class="progress-bar-fill bg-royal" id="report-progress-fill" style="width: 0%;"></div>
+                </div>
+                <div class="report-status-msg text-center margin-top-sm" id="report-status-message"></div>
+              </div>
+            </div>
+
+            <div class="card col-span-4">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="history"></i>
+                  <h2>Generated Audits Log</h2>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="enterprise-table">
+                  <thead>
+                    <tr>
+                      <th>Filename</th>
+                      <th>Date Generated</th>
+                      <th>Size</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><i data-lucide="file-text" class="text-royal"></i> LUB-MONTHLY-JULY-2026.pdf</td>
+                      <td>Aug 01, 2026</td>
+                      <td>2.4 MB</td>
+                      <td><span class="badge badge-success">Archived</span></td>
+                      <td><button class="btn btn-sm btn-secondary"><i data-lucide="download" style="width:12px; height:12px;"></i></button></td>
+                    </tr>
+                    <tr>
+                      <td><i data-lucide="sheet" class="text-success"></i> SENSOR-RAW-PUMP4-WEEK31.csv</td>
+                      <td>Jul 28, 2026</td>
+                      <td>14.8 MB</td>
+                      <td><span class="badge badge-success">Archived</span></td>
+                      <td><button class="btn btn-sm btn-secondary"><i data-lucide="download" style="width:12px; height:12px;"></i></button></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. TRACEABILITY VIEW -->
+        <section id="view-traceability" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>Lubricant Chain of Custody & Traceability</h1>
+              <p>Audit production history, chemical batches, and operators matching QR Code signatures.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card col-span-8">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="qr-code"></i>
+                  <h2>Database Ledger Query</h2>
+                </div>
+              </div>
+              
+              <div class="traceability-search-toolbar">
+                <div class="search-field">
+                  <label for="trace-batch">Batch ID</label>
+                  <input type="text" id="trace-batch" placeholder="e.g. LUB-2026-A8">
+                </div>
+                <div class="search-field">
+                  <label for="trace-machine">Machine ID</label>
+                  <input type="text" id="trace-machine" placeholder="e.g. pump-4">
+                </div>
+                <div class="search-field">
+                  <label for="trace-operator">Operator</label>
+                  <input type="text" id="trace-operator" placeholder="e.g. Vance">
+                </div>
+                <button class="btn btn-primary" id="trace-search-btn">
+                  <i data-lucide="search"></i> Run Ledger Query
+                </button>
+              </div>
+
+              <div class="table-responsive margin-top-md">
+                <table class="enterprise-table">
+                  <thead>
+                    <tr>
+                      <th>Batch ID</th>
+                      <th>Refill Date</th>
+                      <th>Machine Unit</th>
+                      <th>Operator</th>
+                      <th>Lubricant Brand</th>
+                      <th>Lab Sample ID</th>
+                      <th>Verification status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="trace-ledger-body">
+                    <tr>
+                      <td><strong>LUB-2026-A8</strong></td>
+                      <td>Aug 03, 2026</td>
+                      <td>Main Feed Pump #4</td>
+                      <td>M. Scholz</td>
+                      <td>Shell Omala S4 WE 320</td>
+                      <td>LAB-5829-4</td>
+                      <td><span class="badge badge-success"><i data-lucide="check-circle" style="width:12px; height:12px; display:inline-block; margin-right:4px;"></i> Verified</span></td>
+                    </tr>
+                    <tr>
+                      <td><strong>LUB-2026-A7</strong></td>
+                      <td>Jul 28, 2026</td>
+                      <td>Steam Turbine #12</td>
+                      <td>A. Vance</td>
+                      <td>Mobil SHC 626</td>
+                      <td>LAB-5712-1</td>
+                      <td><span class="badge badge-success"><i data-lucide="check-circle" style="width:12px; height:12px; display:inline-block; margin-right:4px;"></i> Verified</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. DEVICES VIEW -->
+        <section id="view-devices" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>IoT Device Registry & Edge Status</h1>
+              <p>Hardware diagnostic overview of active ESP32 Microcontrollers and MQTT Brokers.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card col-span-4">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="cpu"></i>
+                  <h2>Edge Node Configuration (ESP32-WROOM-32E)</h2>
+                </div>
+              </div>
+              <div class="tech-spec-card">
+                <div class="spec-header-graphic">
+                  <i data-lucide="cpu" class="microchip-large"></i>
+                  <div>
+                    <h3>ESP32-LUB-NODE-04</h3>
+                    <span>Firmware version: v2.4.1-stable</span>
+                  </div>
+                </div>
+
+                <div class="info-table margin-top-md">
+                  <div class="info-row">
+                    <span class="label">SoC IP Address</span>
+                    <span class="val font-mono">192.168.10.104</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">MAC Address</span>
+                    <span class="val font-mono">24:0A:C4:8A:2F:10</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">MQTT Topic</span>
+                    <span class="val font-mono">factory/zone_a/pump_4/telemetry</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">Telemetry Sample Interval</span>
+                    <span class="val">500 ms</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">Broker Endpoint</span>
+                    <span class="val font-mono">mqtt://emqx-broker.local:1883</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">RSSI (Wi-Fi Strength)</span>
+                    <span class="val text-success">-62 dBm (Excellent)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card col-span-4">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="server"></i>
+                  <h2>Smart Factory Architecture & Tech Stack</h2>
+                </div>
+              </div>
+              <div class="tech-stack-details">
+                <div class="tech-stack-grid">
+                  <div class="tech-item">
+                    <span class="tech-title">Microcontrollers</span>
+                    <strong class="tech-val">ESP32 SoC</strong>
+                    <p class="tech-desc">Edge sensor integration with local cache capability during Wi-Fi drops.</p>
+                  </div>
+                  <div class="tech-item">
+                    <span class="tech-title">Data Ingestion</span>
+                    <strong class="tech-val">MQTT Broker</strong>
+                    <p class="tech-desc">Ultra-low latency telemetry packet distribution via EMQX.</p>
+                  </div>
+                  <div class="tech-item">
+                    <span class="tech-title">API Layer</span>
+                    <strong class="tech-val">RESTful API</strong>
+                    <p class="tech-desc">Secure JSON ingestion endpoints for lab report integration.</p>
+                  </div>
+                  <div class="tech-item">
+                    <span class="tech-title">Database Storage</span>
+                    <strong class="tech-val">PostgreSQL</strong>
+                    <p class="tech-desc">Relational historical ledger storing time-series sensor buckets.</p>
+                  </div>
+                  <div class="tech-item">
+                    <span class="tech-title">AI Engine</span>
+                    <strong class="tech-val">TensorFlow Lite</strong>
+                    <p class="tech-desc">LSTM networks running on Edge Gateways predicting RUL and anomalies.</p>
+                  </div>
+                  <div class="tech-item">
+                    <span class="tech-title">Deployment</span>
+                    <strong class="tech-val">Docker Containers</strong>
+                    <p class="tech-desc">Siemens Industrial Edge environment package orchestration.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 12. SETTINGS VIEW -->
+        <section id="view-settings" class="view-pane">
+          <div class="view-title-bar">
+            <div>
+              <h1>System Configuration & Thresholds</h1>
+              <p>Calibrate sensor parameters, safety alarms, and edge computing nodes.</p>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="card col-span-4">
+              <div class="card-header">
+                <div class="card-header-title">
+                  <i data-lucide="sliders"></i>
+                  <h2>AI Safety Alarm Thresholds</h2>
+                </div>
+              </div>
+              <div class="threshold-sliders-panel">
+                <div class="slider-group">
+                  <div class="slider-header">
+                    <span>Critical Oil Temperature</span>
+                    <strong id="val-thresh-temp">80°C</strong>
+                  </div>
+                  <input type="range" min="60" max="100" value="80" class="control-slider" id="thresh-temp">
+                  <p class="slider-desc font-mono">Dispatches critical alarms if temperature exceeds limit.</p>
+                </div>
+
+                <div class="slider-group">
+                  <div class="slider-header">
+                    <span>Moisture Content Warning</span>
+                    <strong id="val-thresh-moisture">250 ppm</strong>
+                  </div>
+                  <input type="range" min="100" max="400" value="250" class="control-slider" id="thresh-moisture">
+                  <p class="slider-desc font-mono">Dispatches warning alerts to reliability team if exceeded.</p>
+                </div>
+
+                <div class="slider-group">
+                  <div class="slider-header">
+                    <span>Metal Particle Count Limit</span>
+                    <strong id="val-thresh-metal">25 ppm</strong>
+                  </div>
+                  <input type="range" min="10" max="50" value="25" class="control-slider" id="thresh-metal">
+                </div>
+
+                <button class="btn btn-primary" id="save-thresholds-btn">
+                  <i data-lucide="save"></i> Deploy New Thresholds
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+      
+      <!-- ==========================================
+           DIGITAL TWIN / 3D MONITORING FOOTER / CANVASES
+           ========================================== -->
+      <footer class="app-footer">
+        <div class="footer-left">
+          <div class="twin-tab-header">
+            <i data-lucide="box"></i>
+            <h3>Digital Twin - Active Lubricant Flow</h3>
+          </div>
+        </div>
+        <div class="footer-right">
+          <span class="active-twin-target">Active Twin Model: <strong id="twin-model-name">Main Feed Pump #4 Gearbox</strong></span>
+          <button class="btn btn-xs btn-primary-outline" id="toggle-twin-anim-btn"><i data-lucide="pause" style="width: 12px; height: 12px;"></i> Pause Simulation</button>
+        </div>
+      </footer>
+      
+      <div class="digital-twin-container card">
+        <div class="twin-workspace">
+          <canvas id="digital-twin-canvas"></canvas>
+          
+          <div class="twin-overlays">
+            <div class="twin-hud-overlay top-left">
+              <span class="hud-tag">System: Gearbox Ref-04</span>
+              <span class="hud-tag font-mono">Fluid Loop: Primary</span>
+            </div>
+            
+            <div class="twin-hud-overlay top-right">
+              <span class="hud-status status-danger pulse" id="twin-hud-status-badge">TELEMETRY DEGRADED</span>
+            </div>
+
+            <!-- Hotspots positioned absolutely on top of the twin workspace -->
+            <div class="twin-hotspot" style="top: 20%; left: 35%;" data-sensor-type="temp">
+              <div class="hotspot-ping red" id="hotspot-ping-temp"></div>
+              <div class="hotspot-label">
+                <span>Temp</span>
+                <strong id="twin-hud-temp">84.2°C</strong>
+              </div>
+            </div>
+
+            <div class="twin-hotspot" style="top: 45%; left: 55%;" data-sensor-type="viscosity">
+              <div class="hotspot-ping yellow" id="hotspot-ping-visc"></div>
+              <div class="hotspot-label">
+                <span>Visc</span>
+                <strong id="twin-hud-visc">288 cSt</strong>
+              </div>
+            </div>
+
+            <div class="twin-hotspot" style="top: 60%; left: 15%;" data-sensor-type="flow">
+              <div class="hotspot-ping green" id="hotspot-ping-flow"></div>
+              <div class="hotspot-label">
+                <span>Flow</span>
+                <strong id="twin-hud-flow">12.5 L/m</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="app.js"></script>
+</body>
+</html>
